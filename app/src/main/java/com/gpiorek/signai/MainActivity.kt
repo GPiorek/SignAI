@@ -47,12 +47,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+        override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        // Request camera permissions
+            // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
 
         // Set up the listeners for take photo and video capture buttons
         viewBinding.imageCaptureButton.setOnClickListener { takePhoto() }
-        viewBinding.videoCaptureButton.setOnClickListener { captureVideo() }
+//        viewBinding.videoCaptureButton.setOnClickListener { captureVideo() }
 
         cameraExecutor = Executors.newSingleThreadExecutor()
     }
@@ -72,7 +72,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun startCamera() {}
 
-    private fun requestPermissions() {}
+    private fun requestPermissions() {
+            activityResultLauncher.launch(REQUIRED_PERMISSIONS)
+    }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
@@ -97,4 +99,24 @@ class MainActivity : AppCompatActivity() {
                 }
             }.toTypedArray()
     }
+
+    private val activityResultLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions())
+        { permissions ->
+            // Handle Permission granted/rejected
+            var permissionGranted = true
+            permissions.entries.forEach {
+                if (it.key in REQUIRED_PERMISSIONS && it.value == false)
+                    permissionGranted = false
+            }
+            if (!permissionGranted) {
+                Toast.makeText(baseContext,
+                    "Permission request denied",
+                    Toast.LENGTH_SHORT).show()
+            } else {
+                startCamera()
+            }
+        }
+
 }
