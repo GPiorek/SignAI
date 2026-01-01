@@ -29,6 +29,10 @@ android {
             
             pip {
                 install("opencv-python")
+                install("numpy")
+//                install("os")
+//                install("sqlite3") Do zaimportowana w kodzie pythona bo tutaj blad wyrzuca
+
             }
         }
     }
