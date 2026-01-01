@@ -17,16 +17,19 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        ndk{
+        ndk {
             abiFilters += listOf("arm64-v8a", "x86_64")
         }
     }
 
-    chaquopy{
-        defaultConfig{
-            version= "3.14"
-            buildPython("")
-
+    chaquopy {
+        defaultConfig {
+            version = "3.10"
+            buildPython("C:\\Users\\Grzegorz\\AppData\\Local\\Programs\\Python\\Python310\\python.exe")
+            
+            pip {
+                install("opencv-python")
+            }
         }
     }
 
