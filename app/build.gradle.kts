@@ -22,6 +22,18 @@ android {
         }
     }
 
+    chaquopy{
+        defaultConfig{
+            buildPython("/home/Grzegorz/python310/bin/python3.10")
+            pip{
+                install("numpy")
+                install("opencv-python")
+
+
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
