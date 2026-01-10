@@ -2,6 +2,7 @@ package com.gpiorek.signai
 
 import android.Manifest
 import android.content.ContentValues
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -47,12 +48,12 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var cameraExecutor: ExecutorService
 
-        override fun onCreate(savedInstanceState: Bundle?) {
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-            // Request camera permissions
+        // Request camera permissions
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -103,6 +104,10 @@ class MainActivity : AppCompatActivity() {
                     val msg = "Photo capture succeeded: ${output.savedUri}"
                     Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
+
+                    // Uruchomienie SignActivity
+                    val intent = Intent(this@MainActivity, SignActivity::class.java)
+                    startActivity(intent)
                 }
             }
         )
@@ -145,7 +150,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun requestPermissions() {
-            activityResultLauncher.launch(REQUIRED_PERMISSIONS)
+        activityResultLauncher.launch(REQUIRED_PERMISSIONS)
     }
 
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
