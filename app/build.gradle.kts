@@ -26,13 +26,11 @@ android {
         defaultConfig {
             version = "3.10"
             buildPython("C:\\Users\\Grzegorz\\AppData\\Local\\Programs\\Python\\Python310\\python.exe")
-            
             pip {
                 install("opencv-python")
                 install("numpy")
 //                install("os")
 //                install("sqlite3") Do zaimportowana w kodzie pythona bo tutaj blad wyrzuca
-
             }
         }
     }
