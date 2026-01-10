@@ -3,4 +3,8 @@
     <string name="take_photo">Take Photo</string>
     <string name="start_capture">Start Capture</string>
     <string name="stop_capture">Stop Capture</string>
+
+    <string name="back_button_desc">Back Button</string>
+    <string name="detected_sign_desc">Detected sign</string>
+    <string name="app_name_styled">S I G N A I</string>
 </resources>
