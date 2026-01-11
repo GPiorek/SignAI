@@ -1,9 +1,12 @@
 package com.gpiorek.signai
 
 import android.Manifest
+import android.content.ContentResolver
 import android.content.ContentValues
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -32,9 +35,17 @@ import androidx.camera.video.Quality
 import androidx.camera.video.QualitySelector
 import androidx.camera.video.VideoRecordEvent
 import androidx.core.content.PermissionChecker
+import com.chaquo.python.PyObject
+import com.chaquo.python.Python
+import com.chaquo.python.android.AndroidPlatform
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
+import java.io.IOException
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
 import java.util.Locale
+import kotlin.math.log
 
 typealias LumaListener = (luma: Double) -> Unit
 
@@ -49,6 +60,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var cameraExecutor: ExecutorService
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         viewBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
@@ -91,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
         // Set up image capture listener, which is triggered after photo has
         // been taken
+        val context = this
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -102,15 +115,47 @@ class MainActivity : AppCompatActivity() {
                 override fun
                         onImageSaved(output: ImageCapture.OutputFileResults){
                     val msg = "Photo capture succeeded: ${output.savedUri}"
-                    Toast.makeText(baseContext, msg, Toast.LENGTH_SHORT).show()
                     Log.d(TAG, msg)
 
-                    // Uruchomienie SignActivity
-                    val intent = Intent(this@MainActivity, SignActivity::class.java)
-                    startActivity(intent)
+                    //init main function from backend
+                    if (!Python.isStarted()) {
+                        Python.start(AndroidPlatform(context))
+                    }
+                    val python = Python.getInstance()
+                    val SignRec = python.getModule("SignRecognition")
+
+                    //copies uri of the saved file and copies it to cache
+                    val uri = output.savedUri
+                    val tempFile = File(  "${context.cacheDir}/temp.jpg")
+                    dumpUriToFile(context, uri!!, tempFile)
+                    //feeds the image to backend and returns a description of the image
+                    val result = SignRec.callAttr("main", tempFile.path).toString()
+                    println(result)
+                    Toast.makeText(baseContext, result, Toast.LENGTH_SHORT).show()
+
+                    Log.d(TAG, result)
+
+
                 }
             }
         )
+    }
+
+    @Throws(IOException::class)
+    fun dumpUriToFile(
+        context: Context,
+        sourceUri: Uri,
+        destinationFile: File
+    ) {
+        val contentResolver: ContentResolver = context.contentResolver
+
+        contentResolver.openFileDescriptor(sourceUri, "r")?.use { pfd ->
+            FileInputStream(pfd.fileDescriptor).use { inputStream ->
+                FileOutputStream(destinationFile).use { outputStream ->
+                    inputStream.copyTo(outputStream)
+                }
+            }
+        } ?: throw IOException("Unable to open file descriptor for URI: $sourceUri")
     }
 
     private fun captureVideo() {}
