@@ -10,6 +10,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
+import android.speech.tts.TextToSpeech
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.ImageCapture
 import androidx.camera.video.Recorder
@@ -38,6 +39,7 @@ import androidx.core.content.PermissionChecker
 import com.chaquo.python.PyObject
 import com.chaquo.python.Python
 import com.chaquo.python.android.AndroidPlatform
+import org.w3c.dom.Text
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -48,8 +50,9 @@ import java.util.Locale
 import kotlin.math.log
 
 typealias LumaListener = (luma: Double) -> Unit
+lateinit var textToSpeech: TextToSpeech
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var viewBinding: ActivityMainBinding
 
     private var imageCapture: ImageCapture? = null
@@ -103,7 +106,7 @@ class MainActivity : AppCompatActivity() {
 
         // Set up image capture listener, which is triggered after photo has
         // been taken
-        val context = this
+        textToSpeech = TextToSpeech(this, this)
         imageCapture.takePicture(
             outputOptions,
             ContextCompat.getMainExecutor(this),
@@ -119,25 +122,36 @@ class MainActivity : AppCompatActivity() {
 
                     //init main function from backend
                     if (!Python.isStarted()) {
-                        Python.start(AndroidPlatform(context))
+                        Python.start(AndroidPlatform(this@MainActivity))
                     }
                     val python = Python.getInstance()
                     val SignRec = python.getModule("SignRecognition")
 
                     //copies uri of the saved file and copies it to cache
                     val uri = output.savedUri
-
                     val tempFile = File(  "${this@MainActivity.cacheDir}/temp.jpg")
-
                     dumpUriToFile(this@MainActivity, uri!!, tempFile)
+
                     //feeds the image to backend and returns a description of the image
                     val result = SignRec.callAttr("main", tempFile.path).toString()
                     Toast.makeText(baseContext, result, Toast.LENGTH_SHORT).show()
-
+                    textToSpeech.speak(result, TextToSpeech.QUEUE_FLUSH, null, null)
                     Log.d(TAG, result)
                 }
             }
         )
+    }
+
+    override fun onInit(status: Int ) {
+        if (status == TextToSpeech.SUCCESS) {
+            val res : Int = textToSpeech.setLanguage(Locale.ENGLISH)
+            if (res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.d(TAG, "Language not supported")
+            }
+            else {
+                Log.d(TAG, "Failed to init")
+            }
+        }
     }
 
     @Throws(IOException::class)

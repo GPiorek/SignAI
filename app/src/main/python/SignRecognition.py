@@ -522,11 +522,11 @@ def main(path):
     min_conf = max(0.0, min(1.0, float(args.min_conf)))
     language = args.lang or "pl"
     strings = get_lang_strings(language)
-    output = run_on_image(path, model, engine, min_conf=min_conf, language=language, strings=strings)
+    output = run_on_image(path, model, engine, min_conf=min_conf, language="en", strings=strings)
     print(output)
     print("#" * 20)
     if output is None:
-        return "Prosze sprobowac ponownie"
+        return "Please try again"
     else:
         return max(set(output), key=output.count)
 
