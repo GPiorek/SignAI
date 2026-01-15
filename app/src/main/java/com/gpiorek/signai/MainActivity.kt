@@ -126,16 +126,15 @@ class MainActivity : AppCompatActivity() {
 
                     //copies uri of the saved file and copies it to cache
                     val uri = output.savedUri
-                    val tempFile = File(  "${context.cacheDir}/temp.jpg")
-                    dumpUriToFile(context, uri!!, tempFile)
+
+                    val tempFile = File(  "${this@MainActivity.cacheDir}/temp.jpg")
+
+                    dumpUriToFile(this@MainActivity, uri!!, tempFile)
                     //feeds the image to backend and returns a description of the image
                     val result = SignRec.callAttr("main", tempFile.path).toString()
-                    println(result)
                     Toast.makeText(baseContext, result, Toast.LENGTH_SHORT).show()
 
                     Log.d(TAG, result)
-
-
                 }
             }
         )

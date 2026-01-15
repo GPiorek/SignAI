@@ -427,11 +427,11 @@ def get_lang_strings(lang):
     return LANG_STRINGS.get(lang, LANG_STRINGS["pl"])
 
 def print_detections(enriched, strings):
-    return_mgs = ""
+    return_mgs = []
     for d in enriched[:12]:
-        return_mgs = f'{strings["detected"]}: {d["name"]} | conf: {d["conf"]:.2f} | code: {d["code"]}'
+        return_mgs.append( f'{strings["detected"]}: {d["name"]} | code: {d["code"]}')
         if d.get("desc"):
-            return_mgs = f'{strings["desc"]}: {d["desc"]}'
+            return_mgs.append( f'{strings["desc"]}: {d["desc"]} ')
     return return_mgs
 
 def handle_detections(enriched, engine, strings, last_code=None, verbose=False, notify_on_none=False):
@@ -445,9 +445,6 @@ def handle_detections(enriched, engine, strings, last_code=None, verbose=False, 
         return print_detections(enriched, strings)
     if top.get("code") != last_code:
         msg = top.get("desc") or top.get("name") or ""
-        if msg:
-            #speak(engine, msg)
-            pass
         last_code = top.get("code")
     return last_code
 
@@ -526,8 +523,12 @@ def main(path):
     language = args.lang or "pl"
     strings = get_lang_strings(language)
     output = run_on_image(path, model, engine, min_conf=min_conf, language=language, strings=strings)
-
-    return output
+    print(output)
+    print("#" * 20)
+    if output is None:
+        return "Prosze sprobowac ponownie"
+    else:
+        return max(set(output), key=output.count)
 
     # run_camera(
     #     args.camera,
@@ -539,3 +540,5 @@ def main(path):
     #     strings=strings,
     # )
 
+if __name__ == '__main__':
+    print(main("test.jpg"))
